@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Transcript.Data;
 using Transcript.Models;
@@ -22,9 +23,30 @@ namespace Transcript.Controllers
 
         // GET: api/People
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Person>>> GetPerson()
+        public async Task<ActionResult<IEnumerable<student>>> GetPerson()
         {
-            return await _context.Person.ToListAsync();
+            var challenge2 = new List<student>();
+            var person = await _context.Person.Where(a => a.Discriminator == "Student").ToListAsync();
+            foreach (var item in person)
+            {
+                var stgrades = _context.StudentGrade.Where(b => b.StudentId == item.PersonId & b.Grade != null).Include(a => a.Course)
+                .Select(item1 => new grades { courseId = item1.CourseId, title = item1.Course.Title, credits = item1.Course.Credits, grade = item1.Grade }).ToList();
+
+                var gpa1 = Convert.ToDecimal("0.0");
+                if (stgrades.Count() > 0)
+                {
+                    gpa1 = Math.Round(Convert.ToDecimal(stgrades.Sum(x => x.grade) / stgrades.Count()), 2);
+                }
+                var studentdata = new student()
+                {
+                    studentId = item.PersonId,
+                    firstName = item.FirstName,
+                    lastName = item.LastName,
+                    gpa = gpa1                   
+                };
+                challenge2.Add(studentdata);
+            }
+            return challenge2;
         }
 
         // GET: api/People/5
@@ -44,7 +66,7 @@ namespace Transcript.Controllers
             var gpa1 = Convert.ToDecimal("0.0");
             if (stgrades != null)
             {
-                gpa1 = Math.Round(Convert.ToDecimal(stgrades.Sum(x => x.grade) / stgrades.Count()), 1);
+                gpa1 = Math.Round(Convert.ToDecimal(stgrades.Sum(x => x.grade) / stgrades.Count()), 2);
             }
             var challenge1 = new student()
             {
@@ -94,12 +116,31 @@ namespace Transcript.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
-        public async Task<ActionResult<Person>> PostPerson(Person person)
+        public async Task<ActionResult<StudentGrade>> PostPerson(StudentGrade StudentGrade)
         {
-            _context.Person.Add(person);
-            await _context.SaveChangesAsync();
+            var person = await _context.Person.Where(a => a.PersonId == StudentGrade.StudentId & a.Discriminator == "Student").FirstOrDefaultAsync();
+            var course = await _context.Course.Where(a => a.CourseId == StudentGrade.CourseId).FirstOrDefaultAsync();
+            var stgrade = await _context.StudentGrade.Where(a => a.StudentId == StudentGrade.StudentId & a.CourseId == StudentGrade.CourseId).FirstOrDefaultAsync();
 
-            return CreatedAtAction("GetPerson", new { id = person.PersonId }, person);
+            
+                if(person != null & course != null)
+                {
+                    if (StudentGrade.Grade == null || (StudentGrade.Grade >= Convert.ToDecimal(0.00) & StudentGrade.Grade <= Convert.ToDecimal(4.00)))
+                    {
+                    if (stgrade == null)
+                    {
+                        _context.StudentGrade.Add(StudentGrade);
+                        await _context.SaveChangesAsync();
+                        return CreatedAtAction(nameof(GetPerson), new { id = StudentGrade.EnrollmentId }, StudentGrade);
+                    }
+                    else
+                        return BadRequest("StudentId and CourseId combination already present in the datatable");                
+                }
+                else
+                    return BadRequest("Grade must be null or a numeric value between 0.00 and 4.00 inclusive."); 
+            }
+            else
+                return NotFound("StudentId or courseId is invalid");
         }
 
         // DELETE: api/People/5

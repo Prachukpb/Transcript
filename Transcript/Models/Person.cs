@@ -11,7 +11,7 @@ namespace Transcript.Models
             CourseInstructor = new HashSet<CourseInstructor>();
             StudentGrade = new HashSet<StudentGrade>();
         }
-        [JsonProperty(PropertyName = "studentId")]
+        
         public int PersonId { get; set; }
         public string LastName { get; set; }
         public string FirstName { get; set; }
