@@ -1,8 +1,5 @@
 ﻿using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Transcript.Models
 {
@@ -12,18 +9,17 @@ namespace Transcript.Models
         public string title { get; set; }
         public int credits { get; set; }
         public decimal? grade { get; set; }
-        
     }
 
-    public class student
+    public class Student
     {
         public int studentId { get; set; }
         public string firstName { get; set; }
         public string lastName { get; set; }
         public decimal gpa { get; set; }
-        //public grades grades { get; set; }
+
+        //This Json Property ignores the grades if it is null when returning the JSON data.
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public virtual ICollection<grades> grades { get; set; }
-
     }
 }

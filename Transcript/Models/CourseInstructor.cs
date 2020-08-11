@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Transcript.Models
+﻿namespace Transcript.Models
 {
     public partial class CourseInstructor
     {

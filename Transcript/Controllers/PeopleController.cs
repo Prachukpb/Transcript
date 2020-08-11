@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using Transcript.Data;
 using Transcript.Models;
@@ -21,147 +20,124 @@ namespace Transcript.Controllers
             _context = context;
         }
 
+        //Challenge 1 - Add an endpoint to retrieve a student's transcript given the ID of the student:
+        // GET: api/People/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Student>> GetPerson(int id)
+        {
+            // Get the student details from table People for the given id.
+            var StudentData = await _context.Person.Where(a => a.PersonId == id & a.Discriminator == "Student").FirstOrDefaultAsync();
+
+            // If the id is invalid or its not a student then return the appropriate status code else proceed.
+            if (StudentData == null)
+            {
+                return NotFound();
+            }
+
+            // Get the student's grades and the course details from tables StudentGrade and Course. Create a List based on the condition to avoid null grade values.
+            var StudentGrades = _context.StudentGrade.Where(b => b.StudentId == id & b.Grade != null).Include(a => a.Course)
+                .Select(item => new grades { courseId = item.CourseId, title = item.Course.Title, credits = item.Course.Credits, grade = item.Grade }).ToList();
+
+            // Calculate the GPA from the data stored in StudentGrades variable.
+            // Assign GPATotal to 0.00 initially.
+            var GpaTotal = Convert.ToDecimal("0.0");
+            if (StudentGrades != null)
+            {
+                GpaTotal = Math.Round(Convert.ToDecimal(StudentGrades.Sum(x => x.grade) / StudentGrades.Count()), 2);
+            }
+
+            // Create a new object and assign the values to it. The Student model is designed based on the output json format.
+            var Challenge_1 = new Student()
+            {
+                studentId = StudentData.PersonId,
+                firstName = StudentData.FirstName,
+                lastName = StudentData.LastName,
+                gpa = GpaTotal,
+                grades = StudentGrades
+            };
+
+            //Return the model with the requested data.
+            return Challenge_1;
+        }
+
+        //Challenge 2 - Add an endpoint to return a list of students and their GPAs.
         // GET: api/People
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<student>>> GetPerson()
+        public async Task<ActionResult<IEnumerable<Student>>> GetPerson()
         {
-            var challenge2 = new List<student>();
-            var person = await _context.Person.Where(a => a.Discriminator == "Student").ToListAsync();
-            foreach (var item in person)
+            //Get the list of all student details from table People.
+            var StudentData = await _context.Person.Where(a => a.Discriminator == "Student").ToListAsync();
+
+            //Generate a new Student list object to store the data.
+            var Challenge_2 = new List<Student>();
+
+            // Initiate a foreach loop for StudentData.
+            foreach (var item in StudentData)
             {
-                var stgrades = _context.StudentGrade.Where(b => b.StudentId == item.PersonId & b.Grade != null).Include(a => a.Course)
+                // Calculate the GPA same like in the previous function. 
+                var StudentGrades = _context.StudentGrade.Where(b => b.StudentId == item.PersonId & b.Grade != null).Include(a => a.Course)
                 .Select(item1 => new grades { courseId = item1.CourseId, title = item1.Course.Title, credits = item1.Course.Credits, grade = item1.Grade }).ToList();
 
-                var gpa1 = Convert.ToDecimal("0.0");
-                if (stgrades.Count() > 0)
+                // Calculating GPA on the fly is better because if there is any change in the grades table it will not affet the GPA calculations. 
+                //This way when we request for GPA we will get the most updated data. 
+                var GpaTotal = Convert.ToDecimal("0.0");
+                if (StudentGrades.Count() > 0)
                 {
-                    gpa1 = Math.Round(Convert.ToDecimal(stgrades.Sum(x => x.grade) / stgrades.Count()), 2);
+                    GpaTotal = Math.Round(Convert.ToDecimal(StudentGrades.Sum(x => x.grade) / StudentGrades.Count()), 2);
                 }
-                var studentdata = new student()
+
+                //Create a new object and assign the values to it.
+                var StudentDataList = new Student()
                 {
                     studentId = item.PersonId,
                     firstName = item.FirstName,
                     lastName = item.LastName,
-                    gpa = gpa1                   
+                    gpa = GpaTotal
                 };
-                challenge2.Add(studentdata);
+                //Add the StudentDataList record to the final list. This keeps adding data to the list untill the loop runs.
+                Challenge_2.Add(StudentDataList);
             }
-            return challenge2;
+
+            //Return the list of student details with GPA.
+            return Challenge_2;
         }
 
-        // GET: api/People/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<student>> GetPerson(int id)
-        {
-            var person = await _context.Person.Where(a => a.PersonId == id & a.Discriminator == "Student").FirstOrDefaultAsync();
-
-            if (person == null)
-            {
-                return NotFound();
-            }
-
-            var stgrades = _context.StudentGrade.Where(b => b.StudentId == id & b.Grade != null).Include(a => a.Course)
-                .Select(item => new grades { courseId = item.CourseId, title = item.Course.Title, credits = item.Course.Credits, grade = item.Grade }).ToList();
-
-            var gpa1 = Convert.ToDecimal("0.0");
-            if (stgrades != null)
-            {
-                gpa1 = Math.Round(Convert.ToDecimal(stgrades.Sum(x => x.grade) / stgrades.Count()), 2);
-            }
-            var challenge1 = new student()
-            {
-                studentId = person.PersonId,
-                firstName = person.FirstName,
-                lastName = person.LastName,
-                gpa = gpa1,
-                grades = stgrades
-            };
-
-            return challenge1;
-        }
-
-        // PUT: api/People/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutPerson(int id, Person person)
-        {
-            if (id != person.PersonId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(person).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!PersonExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/People
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
+        //Challenge 3 & 4 - Add an endpoint to insert a student grade:
+        // POST: api/People/PostGrades
         [HttpPost]
-        public async Task<ActionResult<StudentGrade>> PostPerson(StudentGrade StudentGrade)
+        [Route("[action]")]
+        public async Task<ActionResult<StudentGrade>> PostGrades(StudentGrade StudentGrade)
         {
-            var person = await _context.Person.Where(a => a.PersonId == StudentGrade.StudentId & a.Discriminator == "Student").FirstOrDefaultAsync();
-            var course = await _context.Course.Where(a => a.CourseId == StudentGrade.CourseId).FirstOrDefaultAsync();
-            var stgrade = await _context.StudentGrade.Where(a => a.StudentId == StudentGrade.StudentId & a.CourseId == StudentGrade.CourseId).FirstOrDefaultAsync();
+            // Get all the required data like student, corurse and grade details
+            var StudentData = await _context.Person.Where(a => a.PersonId == StudentGrade.StudentId & a.Discriminator == "Student").FirstOrDefaultAsync();
+            var CourseData = await _context.Course.Where(a => a.CourseId == StudentGrade.CourseId).FirstOrDefaultAsync();
+            var StudentGrades = await _context.StudentGrade.Where(a => a.StudentId == StudentGrade.StudentId & a.CourseId == StudentGrade.CourseId).FirstOrDefaultAsync();
 
-            
-                if(person != null & course != null)
+            //Check for 
+            //1.studentId must be a valid student ID. 
+            //2.courseId must be a valid course ID.
+            if (StudentData != null & CourseData != null)
+            {
+                //3.grade must be null or a numeric value between 0.00 and 4.00 inclusive.(Challenge 3)
+                if (StudentGrade.Grade == null || (StudentGrade.Grade >= Convert.ToDecimal(0.00) & StudentGrade.Grade <= Convert.ToDecimal(4.00)))
                 {
-                    if (StudentGrade.Grade == null || (StudentGrade.Grade >= Convert.ToDecimal(0.00) & StudentGrade.Grade <= Convert.ToDecimal(4.00)))
-                    {
-                    if (stgrade == null)
+                    //4.The combination of CourseID and StudentID must be unique.(Challenge 3)
+                    if (StudentGrades == null)
                     {
                         _context.StudentGrade.Add(StudentGrade);
                         await _context.SaveChangesAsync();
+                        //On success return the data added along with the tabe id.
                         return CreatedAtAction(nameof(GetPerson), new { id = StudentGrade.EnrollmentId }, StudentGrade);
                     }
+                    //Return Custom error messages based on the post data.
                     else
-                        return BadRequest("StudentId and CourseId combination already present in the datatable");                
+                        return BadRequest("StudentId and CourseId combination already present in the datatable");
                 }
                 else
-                    return BadRequest("Grade must be null or a numeric value between 0.00 and 4.00 inclusive."); 
+                    return BadRequest("Grade must be null or a numeric value between 0.00 and 4.00 inclusive.");
             }
             else
                 return NotFound("StudentId or courseId is invalid");
-        }
-
-        // DELETE: api/People/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<Person>> DeletePerson(int id)
-        {
-            var person = await _context.Person.FindAsync(id);
-            if (person == null)
-            {
-                return NotFound();
-            }
-
-            _context.Person.Remove(person);
-            await _context.SaveChangesAsync();
-
-            return person;
-        }
-
-        private bool PersonExists(int id)
-        {
-            return _context.Person.Any(e => e.PersonId == id);
         }
     }
 }

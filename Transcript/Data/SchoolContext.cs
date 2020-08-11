@@ -1,6 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore;
 using Transcript.Models;
 
 namespace Transcript.Data
@@ -16,7 +14,9 @@ namespace Transcript.Data
         {
         }
 
+        //Data Models or Data Tables
         public virtual DbSet<Course> Course { get; set; }
+
         public virtual DbSet<CourseInstructor> CourseInstructor { get; set; }
         public virtual DbSet<Department> Department { get; set; }
         public virtual DbSet<OfficeAssignment> OfficeAssignment { get; set; }
@@ -25,14 +25,16 @@ namespace Transcript.Data
         public virtual DbSet<Person> Person { get; set; }
         public virtual DbSet<StudentGrade> StudentGrade { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseSqlServer("Data Source=DESKTOP-PRACHU;Initial Catalog=School;Trusted_Connection=True;");
-            }
-        }
+        //When the database Schema is reverse enginered from Sql server into entityframework, these data migration codes are generated.
+        //In a code first environment these migration codes will be generated when we do any updates to the database.
+
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //    if (!optionsBuilder.IsConfigured)
+        //    {
+        //        optionsBuilder.UseSqlServer("Data Source=DESKTOP-PRACHU;Initial Catalog=School;Trusted_Connection=True;");
+        //    }
+        //}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 
 namespace Transcript.Models
 {
@@ -11,7 +10,7 @@ namespace Transcript.Models
             CourseInstructor = new HashSet<CourseInstructor>();
             StudentGrade = new HashSet<StudentGrade>();
         }
-        
+
         public int PersonId { get; set; }
         public string LastName { get; set; }
         public string FirstName { get; set; }

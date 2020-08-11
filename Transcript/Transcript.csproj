@@ -20,5 +20,10 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="wwwroot\Assets\challenge4.png" />
+    <None Include="wwwroot\Assets\Challenge_3.txt" />
+  </ItemGroup>
+
 
 </Project>

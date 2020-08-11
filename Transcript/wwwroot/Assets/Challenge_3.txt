@@ -1,0 +1,50 @@
+﻿Challenge - 3
+
+1) C# Script
+                
+//Condition 1 - If not NULL, Grade must be a value between 0.00 and 4.00 inclusive.
+
+var stgradelist = _context.StudentGrade.Where(a => a.Grade != null & (a.Grade < Convert.ToDecimal(0.00) || a.Grade > Convert.ToDecimal(4.00))).ToList();
+foreach (var item in stgradelist)
+{
+   _context.StudentGrade.Remove(item);
+}
+
+// Condition 2 - The combination of CourseID and StudentID must be unique.
+
+var stgrade = _context.StudentGrade.GroupBy(s => new { s.StudentId, s.CourseId }).SelectMany(grp => grp.Skip(1));
+foreach (var item in stgrade)
+{
+  _context.StudentGrade.RemoveRange(item);
+}           
+ _context.SaveChanges();
+
+
+2) T-SQL
+
+//Condition 1 - If not NULL, Grade must be a value between 0.00 and 4.00 inclusive.
+
+Delete From [dbo].[StudentGrade] where Grade <> null AND Grade < 0.00 OR Grade > 4.00
+
+
+// Condition 2 - The combination of CourseID and StudentID must be unique.
+
+WITH cte AS (
+    SELECT 
+        EnrollmentID, 
+        CourseID, 
+        StudentID, 
+        Grade, 
+        ROW_NUMBER() OVER (
+            PARTITION BY 
+                CourseID, 
+        StudentID 
+            ORDER BY 
+                CourseID, 
+        StudentID
+        ) row_num
+     FROM 
+        [dbo].[StudentGrade]
+)
+DELETE FROM cte
+WHERE row_num > 1;

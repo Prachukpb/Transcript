@@ -1,0 +1,54 @@
+﻿@page
+@model Transcript.Pages.ApiIndexModel
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+}
+<h1>Text - Em - All Back End Coding Challenge</h1>
+<p>
+    Greetings,<br />
+    I would like to thank you for this opportunity and experience to do the coding challenge. It was interesting and fun to create a Web API application.<br />
+    I have created this application using <strong>.Net Core 3.1</strong> and used <strong>entity framework</strong> to communicate with the <strong>SQL database server</strong>.<br /><br />
+    Please find the code output and the answers below.
+</p>
+<form method="post">
+    <div class="row">
+        <div class="col-lg-1">
+            <h4>Challenge 1 - Add an endpoint to retrieve a student's transcript given the ID of the student.</h4>
+
+            <label>Please enter a valid student Id# :</label><input type="number" min="0" name="studentid">
+            <button type="submit" class="btn btn-default" asp-page-handler="Challenge1">Retrieve Transcript</button>
+        </div>
+        <div class="col-lg-1">
+            <h4>Challenge 2 - Add an endpoint to return a list of students and their GPAs.</h4>
+
+            <button type="submit" class="btn btn-default" asp-page-handler="Challenge2">Students List</button>
+        </div>
+        <div class="col-lg-1">
+            <h4>Challenge 3 - Modify the StudentGrade table in a live database.</h4>
+            <p>
+                Modifying a live database is always a risk. We have to be cautious and take backup before updating. We are modifying the StudentGrade table to enforce the following rules.
+                <ul>
+                    <li>If not NULL, Grade must be a value between 0.00 and 4.00 inclusive.</li>
+                    <li>The combination of CourseID and StudentID must be unique.</li>
+</ul>
+                These rules can be implemented in two steps.
+                <ol>
+                    <li>Update the old data where the rules can be applied.</li>
+                    <ul>
+                        <li>
+                            Updating the data can be done using C# or T-Sql. Please <a href="~/Assets/Challenge_3.txt" target="_blank"> Click here</a> to view the scripts.
+</ul>
+                    <li>Implement the rules before inserting the data to the table.</li>
+                    <ul>
+                        <li>This has been imlemented in Challenge - 4.</li>
+                    </ul>
+                </ol>
+            </p>
+        </div>
+        <div class="col-lg-1">
+            <h4>Challenge 4 - Add an endpoint to insert a student grade.</h4>
+            <p>HTTP POST Endpoint - "https://localhost:#/api/people/PostGrades"</p>
+            <img src="~/Assets/challenge4.png" />
+        </div>
+    </div>
+</form>
