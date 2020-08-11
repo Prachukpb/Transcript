@@ -41,7 +41,7 @@ namespace Transcript.Controllers
             // Calculate the GPA from the data stored in StudentGrades variable.
             // Assign GPATotal to 0.00 initially.
             var GpaTotal = Convert.ToDecimal("0.0");
-            if (StudentGrades != null)
+            if (StudentGrades.Count() > 0)
             {
                 GpaTotal = Math.Round(Convert.ToDecimal(StudentGrades.Sum(x => x.grade) / StudentGrades.Count()), 2);
             }

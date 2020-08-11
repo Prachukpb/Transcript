@@ -13,12 +13,12 @@ namespace Transcript.Pages
         {
         }
 
-        public async Task<IActionResult> OnPostChallenge1Async()
+        public IActionResult OnPostChallenge1()
         {
             var id = Request.Form["studentid"];
             return Redirect("api/people/" + Int16.Parse(id));
         }
-        public async Task<IActionResult> OnPostChallenge2Async()
+        public IActionResult OnPostChallenge2Async()
         {
             return Redirect("api/people");
         }
