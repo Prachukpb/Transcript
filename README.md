@@ -14,3 +14,6 @@ Update the connection string in the **appsettings.json** to connect to the datab
 
 ## Start the Application
 When the setup is complete and you start the application in debug mode, it will take you to a simple UI razor page with the list of challenges and their respective answers/output for all the challenges.
+
+## Timing
+The total time it took me to complete this challenge is between 6 - 7 hours spread over a span of 3 days. I was able to design, develop, implement, test and document the application.
